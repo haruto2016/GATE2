@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Aura Ultraviolet UI Initializing...');
+    
     const urlInput = document.getElementById('url-input');
     const goBtn = document.getElementById('go-btn');
     const mainUi = document.getElementById('main-ui');
@@ -7,22 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const backHome = document.getElementById('back-home');
     const displayUrl = document.getElementById('current-display-url');
 
-    // URLをBase64でエンコード（フィルター回避のため）
-    function encodeUrl(url) {
-        if (!url) return '';
-        // http(s):// が抜けている場合は補完
-        if (!url.startsWith('http')) {
-            url = 'https://' + url;
-        }
-        return btoa(url);
+    // Service Worker の登録
+    const swPath = '/uv/uv.sw.js';
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register(swPath, {
+            scope: __uv$config.prefix
+        }).then(() => {
+            console.log('UV Service Worker: Registered');
+        }).catch(err => {
+            console.error('UV Service Worker: Registration Failed', err);
+        });
     }
 
     function launchProxy() {
-        const url = urlInput.value.trim();
+        let url = urlInput.value.trim();
         if (!url) return;
 
-        const encoded = encodeUrl(url);
-        const proxyUrl = `/gateway?url=${encoded}`;
+        // 検索またはURL補完
+        if (!url.includes('.') || url.includes(' ')) {
+            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+        } else if (!url.startsWith('http')) {
+            url = 'https://' + url;
+        }
+
+        console.log('UV Engine: Launching to ' + url);
+
+        // Ultraviolet 形式のURL生成 (/uv/service/...)
+        const proxyUrl = __uv$config.prefix + __uv$config.encodeUrl(url);
 
         // UI切り替え
         mainUi.classList.add('hidden');
@@ -30,14 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // フレームに読み込み
         proxyFrame.src = proxyUrl;
-        displayUrl.textContent = `Aura Secure Tunnel: ${url}`;
-        
-        console.log(`Launching secure tunnel to: ${url}`);
+        displayUrl.textContent = `Aura UV: ${url}`;
     }
 
-    // イベントリスナー
     goBtn.addEventListener('click', launchProxy);
-
     urlInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') launchProxy();
     });
@@ -47,12 +56,5 @@ document.addEventListener('DOMContentLoaded', () => {
         mainUi.classList.remove('hidden');
         proxyFrame.src = 'about:blank';
         urlInput.value = '';
-    });
-
-    // キーボードショートカット (Alt + H でホームに戻る)
-    window.addEventListener('keydown', (e) => {
-        if (e.altKey && e.key === 'h') {
-            backHome.click();
-        }
     });
 });

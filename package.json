@@ -1,15 +1,14 @@
 {
-  "name": "aura-gateway",
-  "version": "1.0.0",
-  "description": "Premium Stealth Web Proxy Gateway (Lightweight)",
-  "main": "server.js",
+  "name": "aura-ultraviolet",
+  "version": "2.0.0",
+  "description": "Premium Ultraviolet Proxy with Aura UI",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "node-fetch": "^2.6.9",
-    "cookie-parser": "^1.4.6"
+    "@tomphttp/bare-server-node": "^2.0.1"
   },
   "engines": {
     "node": "18.x"
