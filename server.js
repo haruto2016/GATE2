@@ -80,8 +80,8 @@ app.get('/gateway', async (req, res) => {
                 }
             });
 
-            // 5. ヘッドへのベースタグ注入
-            body = body.replace('<head>', `<head><base href="${targetUrl}">`);
+            // 5. ヘッドへのベースタグ注入はURL解決を狂わせるため削除
+            // body = body.replace('<head>', `<head><base href="${targetUrl}">`);
             
             res.send(body);
         } else {
