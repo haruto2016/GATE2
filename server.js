@@ -21,21 +21,53 @@ app.get('/gateway', async (req, res) => {
         if (!targetUrl.startsWith('http')) {
             targetUrl = decodeUrl(targetUrl);
         }
-        new URL(targetUrl);
+        const urlObj = new URL(targetUrl);
 
         const response = await fetch(targetUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept': '*/*',
+                'Referer': urlObj.origin,
+                'Origin': urlObj.origin
+            },
+            redirect: 'manual'
+        });
+
+        // 1. リダイレクト処理の強化
+        if (response.status >= 300 && response.status < 400) {
+            const location = response.headers.get('location');
+            if (location) {
+                const absoluteLocation = new URL(location, targetUrl).href;
+                return res.redirect(`/gateway?url=${encodeUrl(absoluteLocation)}`);
+            }
+        }
+
+        // 2. ヘッダーのフィルタリング（セキュリティ制限を解除）
+        response.headers.forEach((value, name) => {
+            const lowerName = name.toLowerCase();
+            if (![
+                'x-frame-options', 
+                'content-security-policy', 
+                'cross-origin-resource-policy', 
+                'content-encoding', 
+                'transfer-encoding',
+                'strict-transport-security'
+            ].includes(lowerName)) {
+                res.setHeader(name, value);
             }
         });
+
+        // 3. CORS許可ヘッダーを追加
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+        res.setHeader('Access-Control-Allow-Headers', '*');
 
         const contentType = response.headers.get('content-type');
         
         if (contentType && contentType.includes('text/html')) {
             let body = await response.text();
             
-            // 正規表現によるリンク書き換え（軽量・高速）
+            // 4. リンク書き換えの強化
             body = body.replace(/(href|src|action)=["']([^"']+)["']/g, (match, p1, p2) => {
                 if (p2.startsWith('javascript:') || p2.startsWith('#') || p2.startsWith('data:')) {
                     return match;
@@ -48,20 +80,20 @@ app.get('/gateway', async (req, res) => {
                 }
             });
 
-            // ベースURLの修正
-            const baseTag = `<base href="${targetUrl}">`;
-            body = body.replace('<head>', `<head>${baseTag}`);
-
+            // 5. ヘッドへのベースタグ注入
+            body = body.replace('<head>', `<head><base href="${targetUrl}">`);
+            
             res.send(body);
         } else {
-            // HTML以外はそのままパイプ
+            // 画像、JS、CSSなどはストリームで返す
             response.body.pipe(res);
         }
     } catch (error) {
+        console.error('Gateway Error:', error);
         res.status(500).send(`Gateway Error: ${error.message}`);
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Aura Light Gateway running on port ${PORT}`);
+    console.log(`Aura Pro Gateway running on port ${PORT}`);
 });
