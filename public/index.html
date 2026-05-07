@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Gateway | Premium Web Unblocker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="aura-bg"></div>
+    
+    <div class="container" id="main-ui">
+        <header>
+            <div class="logo">
+                <div class="glow-orb"></div>
+                <h1>AURA <span>GATEWAY</span></h1>
+            </div>
+            <div class="system-status">
+                <span class="pulse"></span> STEALTH MODE ACTIVE
+            </div>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <div class="input-wrapper">
+                    <span class="prefix">https://</span>
+                    <input type="text" id="url-input" placeholder="アクセスしたいサイトのURLを入力..." spellcheck="false" autocomplete="off">
+                    <button id="go-btn">ENTER</button>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h3>SSL Tunneling</h3>
+                    <p>トラフィックを完全に暗号化し、フィルターを通過します。</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Cloud-Bypass</h3>
+                    <p>i-FILTERやInterSafeなどのクラウド規制を回避。</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Agent-Stealth</h3>
+                    <p>クライアント側の監視エージェントから隠蔽されます。</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Aura Network | Encrypted & Decentralized</p>
+        </footer>
+    </div>
+
+    <!-- サイト表示用フレーム -->
+    <div id="proxy-container" class="hidden">
+        <div id="proxy-header">
+            <button id="back-home">HOME</button>
+            <div id="current-display-url"></div>
+        </div>
+        <iframe id="proxy-frame" src="about:blank"></iframe>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
